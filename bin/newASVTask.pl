@@ -4,33 +4,33 @@ use Utils;
 use strict;
 use Getopt::Long;
 
-my($sraStudyId,$sraSampleAndRunIdsPath,$dataDir,$workingDir,$platform,$samplesInfoFile,$trimLeft,$trimLeftR,$truncLen,$truncLenR,$maxLen,$mergeTechReps,$trainingSetFile,$speciesAssignmentFile,$resultFile, $isPaired, $samplesInfo);
+my($sraStudyId,$sraSampleAndRunIdsPath,$dataDir,$workingDir,$platform,$samplesInfoFile,$trimLeft,$trimLeftR,$truncLen,$truncLenR,$maxLen,$mergeTechReps,$trainingSetFile,$speciesAssignmentFile,$isPaired);
 $workingDir = ".";
 
 ###############Collecting Inputs#################################
 &GetOptions( 
             "sraStudyId=s"=> \$sraStudyId,
             "sraSampleAndRunIdsPath=s" => \$sraSampleAndRunIdsPath,
-            "dataDir=s" => \$dataDir,
             "workingDir=s" => \$workingDir,
             "platform=s" => \$platform,
             "samplesInfoFile=s" => \$samplesInfoFile,
             "trimLeft=s" => \$trimLeft,
             "trimLeftR=s" => \$trimLeftR,
             "truncLen=s" => \$truncLen,
+            "truncLenR=s" => \$truncLenR,
             "maxLen=s" => \$maxLen,
             "mergeTechReps" => \$mergeTechReps,
             "trainingSetFile=s" => \$trainingSetFile,
             "speciesAssignmentFile=s" => \$speciesAssignmentFile,
-            "resultFile=s" => \$resultFile,
             "isPaired=s" => \$isPaired,
-            "samplesInfo" => \$samplesInfo
-             );
+            );
 
+$dataDir = ".";
+my $fastqsInDir; 
 ###################Checking Inputs###############################
 die "Must provide either --sraStudyId or --dataDir or --sraSampleAndRunIdsPath"
-  unless 1 == grep {$_} ($dataDir, $sraStudyId, $sraSampleAndRunIdsPath);
-if ($platform eq 'illumina') {
+  unless ($dataDir ne "none" || $sraStudyId ne "none" || $sraSampleAndRunIdsPath ne "none");
+if ($platform eq "illumina") {
   if ($isPaired ne 'true' && $isPaired ne 'false') {
     die "argument to 'isPaired' must be 'true' or 'false'";
   }
@@ -40,15 +40,14 @@ if ($platform eq 'illumina') {
     die "currently only 'illumina' and '454' are supported platforms.";
 } 
 
-if (not $maxLen and $platform eq '454') {
+if ($maxLen eq "none" and $platform eq '454') {
     die "must provide maximum read length as parameter 'maxLen' for 454 data.";
 } 
 
 #####################Generating fastqsInDir##############################
 my $samplesDir = $dataDir;
-my $fastqsInDir; 
 # If dataDir was specified, will unzip and rename all files for fastq
-if ($samplesDir){
+if ($samplesDir ne "none"){
   my @zipFiles = glob("$samplesDir/*.gz");
   foreach my $zipFile (@zipFiles) {
     print STDERR "unzipping $zipFile\n";
@@ -95,11 +94,11 @@ Rscript /usr/bin/filterFastqs.R
 --platform $platform 
 EOF
     $cmd =~ s/\n/ /g;
-    $cmd .= " --samplesInfo $samplesInfo" if $samplesInfo;
-    $cmd .= " --trimLeft $trimLeft" if $trimLeft;
-    $cmd .= " --trimLeftR $trimLeftR" if $trimLeftR;
-    $cmd .= " --truncLen $truncLen" if $truncLen;
-    $cmd .= " --truncLenR $truncLenR" if $truncLenR;
+    $cmd .= " --samplesInfo $samplesInfoFile" if $samplesInfoFile ne "false";
+    $cmd .= " --trimLeft $trimLeft" if $trimLeft ne "false";
+    $cmd .= " --trimLeftR $trimLeftR" if $trimLeftR ne "false";
+    $cmd .= " --truncLen $truncLen" if $truncLen ne "false";
+    $cmd .= " --truncLenR $truncLenR" if $truncLenR ne "false";
 
 print STDERR "Running: $cmd";
 &runCmd($cmd);
@@ -116,7 +115,7 @@ Rscript /usr/bin/buildErrorModels.R
 --platform $platform 
 EOF
 $cmd =~ s/\n/ /g;
-$cmd .= " --samplesInfo $samplesInfo" if $samplesInfo;
+$cmd .= " --samplesInfo $samplesInfoFile" if $samplesInfoFile;
 print STDERR "Running: $cmd";
 &runCmd($cmd);
 
@@ -147,7 +146,7 @@ Rscript /usr/bin/mergeAsvsAndAssignToOtus.R
 --asvRdsInDir $workingDir/featureTable.rds
 --assignTaxonomyRefPath $trainingSetFile
 --addSpeciesRefPath $speciesAssignmentFile
---outPath $resultFile
+--outPath "output"
 EOF
 $cmd =~ s/\n/ /g;
 print STDERR "Running: $cmd";
