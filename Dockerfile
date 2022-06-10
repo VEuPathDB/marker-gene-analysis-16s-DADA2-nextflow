@@ -13,6 +13,6 @@ Run chmod +x *
 
 WORKDIR /work
 
-COPY /data/* /work/
+//COPY /data/* /work/
 
 ENV PERL5LIB=/usr/bin/
