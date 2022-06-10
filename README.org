@@ -9,4 +9,4 @@ Nextflow Conversion of ASVTableTask.pm
      #+begin_example
      nextflow run VEuPathDB/ASVTableTask -with-trace -c  <config_file> -r main
      #+end_example
-Above is not currently functional, work still in progress.
+Above is not currently functional, work still in progress. You will need to supply your own apikey in the nextflow.config.
