@@ -4,8 +4,8 @@ MAINTAINER rdemko2332@gmail.com
 
 WORKDIR /usr/bin/
 
-RUN Rscript -e 'install.packages("data.table")'
-RUN Rscript -e 'install.packages("optparse")'
+RUN Rscript -e 'install.packages("data.table")' \
+  && Rscript -e 'install.packages("optparse")'
 
 COPY /bin/* /usr/bin/
 
@@ -13,6 +13,6 @@ Run chmod +x *
 
 WORKDIR /work
 
-//COPY /data/* /work/
+COPY /data/fastqsInDir/ /usr/bin/
 
-ENV PERL5LIB=/usr/bin/
+
