@@ -13,6 +13,6 @@ Run chmod +x *
 
 WORKDIR /work
 
-COPY /data/fastqsInDir/ /usr/bin/
+COPY /data/* /work/
 
 
