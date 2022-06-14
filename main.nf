@@ -21,46 +21,40 @@ def fetchRunAccessions( tsv ) {
 }
 
 process ASVTableTask {
-  debug true
+  publishDir params.outputDir, mode: 'copy'  
   input:
   
   tuple val(genomeName), path(genomeReads) 
   
   output:
-  path 'featureTable.rds' 
+  path '*_output'
+  path '*_output.bootstraps'
+  path '*_output.full'
   
   """
-  echo "Unzipping FastQs"
   gzip -d --force ${genomeReads[0]} 
   gzip -d --force ${genomeReads[1]} 
   
-  echo "Making Directories"
-  mkdir ./filtered
-  mkdir ./errors
+  mkdir filtered errors feature
   touch ./errors/err.rds
-  touch featureTable.rds
+  touch ./feature/featureTable.rds
   
-  echo "Running Filter"
   Rscript /usr/bin/filterFastqs.R --fastqsInDir . --fastqsOutDir ./filtered --isPaired $params.isPaired --trimLeft $params.trimLeft --trimLeftR $params.trimLeftR --truncLen $params.truncLen --truncLenR $params.truncLenR --maxLen $params.maxLen --platform $params.platform
+
+  rm *.fastq
   
-  echo "Building Error File"
   Rscript /usr/bin/buildErrorModels.R --fastqsInDir ./filtered --errorsOutDir ./errors --errorsFileNameSuffix err.rds --isPaired $params.isPaired --platform $params.platform
   
-  echo "Running FastqtoASV"
-  Rscript /usr/bin/fastqToAsv.R  --fastqsInDir ./filtered  --errorsRdsPath ./errors/err.rds --outRdsPath ./featureTable.rds --isPaired $params.isPaired --platform $params.platform --mergeTechReps $params.mergeTechReps
+  Rscript /usr/bin/fastqToAsv.R  --fastqsInDir ./filtered  --errorsRdsPath ./errors/err.rds --outRdsPath ./feature/featureTable.rds --isPaired $params.isPaired --platform $params.platform --mergeTechReps $params.mergeTechReps
+
+  Rscript /usr/bin/mergeAsvsAndAssignToOtus.R --asvRdsInDir ./feature  --assignTaxonomyRefPath $params.trainingSet --addSpeciesRefPath $params.speciesAssignment --outPath ./"$genomeName"_output
   """
 }
-
 
 workflow {
 
     accessions = fetchRunAccessions( params.sraStudyIdFile )
 
-    fastq_qch = channel
-        .fromSRA( accessions, apiKey: params.apiKey )
-        .view()
-	
-    results = ASVTableTask(fastq_qch)
-
-    results = results.collectFile(storeDir: params.outputDir)
+    channel.fromSRA( accessions, apiKey: params.apiKey, protocol: "http" ) | ASVTableTask
+            
 }
