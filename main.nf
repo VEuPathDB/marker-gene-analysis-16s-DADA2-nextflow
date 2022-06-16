@@ -28,10 +28,8 @@ process ASVPaired {
   tuple val(genomeName), path(genomeReads) 
   
   output:
-  path '*_output' optional true
-  path '*_output.bootstraps' optional true
-  path '*_output.full' optional true
-  
+  path '*_*' optional true
+    
   """
   gzip -d --force ${genomeReads[0]} 
   gzip -d --force ${genomeReads[1]} 
@@ -48,7 +46,7 @@ process ASVPaired {
   
   Rscript /usr/bin/fastqToAsv.R  --fastqsInDir ./filtered  --errorsRdsPath ./errors/err.rds --outRdsPath ./feature/featureTable.rds --isPaired $params.isPaired --platform $params.platform --mergeTechReps $params.mergeTechReps
 
-  Rscript /usr/bin/mergeAsvsAndAssignToOtus.R --asvRdsInDir ./feature  --assignTaxonomyRefPath $params.trainingSet --addSpeciesRefPath $params.speciesAssignment --outPath ./"$genomeName"_output
+  Rscript /usr/bin/mergeAsvsAndAssignToOtus.R --asvRdsInDir ./feature  --assignTaxonomyRefPath $params.trainingSet --addSpeciesRefPath $params.speciesAssignment --outPath ./"$genomeName"_$params.outputName
   """
 }
 
