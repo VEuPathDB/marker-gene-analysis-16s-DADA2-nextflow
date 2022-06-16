@@ -7,6 +7,8 @@ In order to run the script, you will need to supply to the nextflow.config file:
 
 *The parameter names for these have already been specified, you only need to enter them into the empty quotes.*
 
+The output files from this tool will be formatted as (SRRID supplied in sraStudyIDFile parameter)_(outputName parameter).(nothing, "bootstraps", or "full")
+
 ### Get Started
   * Install Nextflow
     
