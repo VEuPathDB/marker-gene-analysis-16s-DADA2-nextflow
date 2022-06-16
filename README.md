@@ -18,16 +18,14 @@ The output files from this tool will be formatted as (SRRID supplied in sraStudy
     
     `nextflow run VEuPathDB/ASVTableTask -with-trace -c  <config_file> -r main`
 
-Running this locally can commonly result in an OOME. This results from the derepFastq function in buildErrorModels.R not having n specified.
+Running this locally can commonly result in an OOME. This results from the derepFastq function in buildErrorsN.R having n as too great a value.
 
-`drpsF[[i]] <- derepFastq(inputFilesF[[i]], verbose = verbose)`
+`drpsF[[i]] <- derepFastq(inputFilesF[[i]], n = 1e+06, verbose = verbose)`
 
 The default n is 1 million reads. If an OOME occurs, a lower number can be entered. 
 
 Ex: `drpsF[[i]] <- derepFastq(inputFilesF[[i]],n = 1e+03, verbose = verbose)`
 
-*This would then involve a rebuilding of the docker container. If you do not wish to do this, I will supply in the container a file named buildErrorsMemSafe.R. In the main.nf, this could be substituted for buildErrorModels.R. It is the same tool, but has n set to 1000.*
-
-**Might add functionality to specify 'n' in the nextflow.config file**
+This is specified in the nextflow.config file parameter "nValue". 
 
 Documentation for derepFastq and other dada2 functionality can be found [here](https://rdrr.io/github/benjjneb/dada2/man/derepFastq.html).
