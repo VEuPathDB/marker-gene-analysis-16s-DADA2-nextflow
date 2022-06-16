@@ -21,7 +21,7 @@ def fetchRunAccessions( tsv ) {
 }
 
 process ASVPaired {
-  errorStrategy 'ignore'
+  
   publishDir params.outputDir, mode: 'copy'  
   input:
   
@@ -42,7 +42,7 @@ process ASVPaired {
 
   rm *.fastq
   
-  Rscript /usr/bin/buildErrorModels.R --fastqsInDir ./filtered --errorsOutDir ./errors --errorsFileNameSuffix err.rds --isPaired $params.isPaired --platform $params.platform
+  Rscript /usr/bin/buildErrorsN.R --fastqsInDir ./filtered --errorsOutDir ./errors --errorsFileNameSuffix err.rds --isPaired $params.isPaired --platform $params.platform --nValue $params.nValue
   
   Rscript /usr/bin/fastqToAsv.R  --fastqsInDir ./filtered  --errorsRdsPath ./errors/err.rds --outRdsPath ./feature/featureTable.rds --isPaired $params.isPaired --platform $params.platform --mergeTechReps $params.mergeTechReps
 
@@ -73,7 +73,7 @@ process ASVSingle {
 
   rm *.fastq
   
-  Rscript /usr/bin/buildErrorModels.R --fastqsInDir ./filtered --errorsOutDir ./errors --errorsFileNameSuffix err.rds --isPaired $params.isPaired --platform $params.platform
+  Rscript /usr/bin/buildErrorsMemSafe.R --fastqsInDir ./filtered --errorsOutDir ./errors --errorsFileNameSuffix err.rds --isPaired $params.isPaired --platform $params.platform
   
   Rscript /usr/bin/fastqToAsv.R  --fastqsInDir ./filtered  --errorsRdsPath ./errors/err.rds --outRdsPath ./feature/featureTable.rds --isPaired $params.isPaired --platform $params.platform --mergeTechReps $params.mergeTechReps
 
