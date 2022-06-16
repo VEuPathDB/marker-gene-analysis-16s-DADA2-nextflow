@@ -2,8 +2,8 @@
 
 In order to run the script, you will need to supply to the nextflow.config file:
 1. An apikey to be used to collect the fastq files from NCBI
-2. The location of your training set file 
-3. The location of your species assignment file
+2. The location of your training set file (a short example file has been supplied in /data)
+3. The location of your species assignment file (a short example file has been supplied in /data)
 
 *The parameter names for these have already been specified, you only need to enter them into the empty quotes.*
 
