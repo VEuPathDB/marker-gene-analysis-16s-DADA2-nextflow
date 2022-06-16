@@ -44,7 +44,7 @@ process ASVPaired {
 
   rm *.fastq
   
-  Rscript /usr/bin/buildErrorsMemSafe.R --fastqsInDir ./filtered --errorsOutDir ./errors --errorsFileNameSuffix err.rds --isPaired $params.isPaired --platform $params.platform
+  Rscript /usr/bin/buildErrorModels.R --fastqsInDir ./filtered --errorsOutDir ./errors --errorsFileNameSuffix err.rds --isPaired $params.isPaired --platform $params.platform
   
   Rscript /usr/bin/fastqToAsv.R  --fastqsInDir ./filtered  --errorsRdsPath ./errors/err.rds --outRdsPath ./feature/featureTable.rds --isPaired $params.isPaired --platform $params.platform --mergeTechReps $params.mergeTechReps
 
@@ -53,6 +53,7 @@ process ASVPaired {
 }
 
 process ASVSingle {
+  errorStrategy 'ignore'
   publishDir params.outputDir, mode: 'copy'  
   input:
   
