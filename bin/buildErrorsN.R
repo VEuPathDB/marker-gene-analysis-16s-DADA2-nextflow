@@ -13,6 +13,7 @@ opt = parse_args(OptionParser(option_list=list(
   make_option("--errorsOutDir", type="character", help = "errorsOutDir"),
   make_option("--errorsFileNameSuffix", type="character", help = "file name, or if in groups, it does ${group}_${suffix}"),
   make_option("--samplesInfo", type="character", help = "samplesInfo", default=NULL),
+  make_option("--nValue", type="integer", help = "n Value for derepFastq"),
   make_option("--isPaired", type="logical", help = "isPaired"),
   make_option("--platform", type="character", help = "platform"),
   make_option("--verbose", type="integer", help = "0,1,2. Default 1", default=1)
@@ -33,7 +34,7 @@ errorModelsSingle <- function(inputFiles, errFile, platform, verbose) {
              NREADS <- 0
              drps <- vector("list", length(inputFiles))
              for(i in seq_along(inputFiles)) {
-               drps[[i]] <- derepFastq(inputFiles[[i]], n = 1e+0, verbose = verbose)
+               drps[[i]] <- derepFastq(inputFiles[[i]], n = opt$nValue, verbose = verbose)
                NREADS <- NREADS + sum(length(getUniques(drps[[i]])))
                if(verbose){message("Total reads dereplicated so far: ", NREADS)}
                if(NREADS > 400000) { break }
@@ -78,8 +79,8 @@ errorModelsPaired <- function(inputFilesF, inputFilesR, errFile, platform, verbo
               denoisedF <- rep(0, length(inputFilesF))
               getN <- function(x) sum(getUniques(x))
               for(i in seq_along(inputFilesF)) {
-                drpsF[[i]] <- derepFastq(inputFilesF[[i]],n = 1000, verbose = verbose)
-                drpsR[[i]] <- derepFastq(inputFilesR[[i]],n = 1000, verbose = verbose)
+                drpsF[[i]] <- derepFastq(inputFilesF[[i]],n = opt$nValue, verbose = verbose)
+                drpsR[[i]] <- derepFastq(inputFilesR[[i]],n = opt$nValue, verbose = verbose)
                 NREADS <- NREADS + sum(length(getUniques(drpsF[[i]])))
                 if(verbose){message("Total reads dereplicated so far: ", NREADS)}
                 if(NREADS > 400000) { break }
