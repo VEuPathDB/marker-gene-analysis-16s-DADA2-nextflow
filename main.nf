@@ -84,7 +84,7 @@ process ASVSingle {
 
 workflow {
 
-    accessions = fetchRunAccessions( params.sraStudyIdFile )
+    accessions = fetchRunAccessions( params.studyIdFile )
     if(params.isPaired == "false") {
         channel.fromSRA( accessions, apiKey: params.apiKey, protocol: "http" ) | ASVSingle
     }
