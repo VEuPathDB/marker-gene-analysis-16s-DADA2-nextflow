@@ -9,10 +9,6 @@ RUN Rscript -e 'install.packages("data.table")' \
 
 COPY /bin/* /usr/bin/
 
-Run chmod +x *
+RUN chmod +x *
 
 WORKDIR /work
-
-
-
-
