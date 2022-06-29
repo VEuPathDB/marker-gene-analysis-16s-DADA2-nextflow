@@ -84,10 +84,10 @@ process mergeAsvsAndAssignToOtus {
 
 workflow {
   accessions = fetchRunAccessions( params.studyIdFile )
-  if(params.isPaired == "true"){
+  if(params.isPaired == false){
       channel.fromSRA( accessions, apiKey: params.apiKey, protocol: "http" ) | prepASVSingle | filterFastqs | buildErrors | fastqToAsv | mergeAsvsAndAssignToOtus
   }
-  if(params.isPaired == "true"){
+  if(params.isPaired == true){
     channel.fromSRA( accessions, apiKey: params.apiKey, protocol: "http" ) | prepASVPaired | filterFastqs | buildErrors | fastqToAsv | mergeAsvsAndAssignToOtus
   }
 }
