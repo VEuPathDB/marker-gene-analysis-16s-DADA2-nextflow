@@ -18,7 +18,7 @@ process prepASVPaired {
   input:
   tuple val(genomeName), path(genomeReads) 
   output:
-  tuple val(genomeName), path('*.fasta')
+  tuple val(genomeName), path('*.fastq')
   """
   gzip -d --force ${genomeReads[0]} 
   gzip -d --force ${genomeReads[1]} 
@@ -29,7 +29,7 @@ process prepASVSingle {
   input:
   tuple val(genomeName), path(genomeReads) 
   output:
-  tuple val(genomeName), path('*.fasta')
+  tuple val(genomeName), path('*.fastq')
   """
   gzip -d --force $genomeReads 
   """  
