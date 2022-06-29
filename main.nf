@@ -18,7 +18,7 @@ process prepASVPaired {
   input:
   tuple val(genomeName), path(genomeReads) 
   output:
-  tuple val(genomeName), path('*.fastq')
+  tuple val(genomeName), path('*.fast*')
   """
   gzip -d --force ${genomeReads[0]} 
   gzip -d --force ${genomeReads[1]} 
@@ -29,7 +29,7 @@ process prepASVSingle {
   input:
   tuple val(genomeName), path(genomeReads) 
   output:
-  tuple val(genomeName), path('*.fastq')
+  tuple val(genomeName), path('*.fast*')
   """
   gzip -d --force $genomeReads 
   """  
@@ -39,7 +39,7 @@ process filterFastqs {
   input:
   tuple val(genomeName), path(fastqs)
   output:
-  tuple val(genomeName), path('filtered/*.fastq')
+  tuple val(genomeName), path('filtered/*.fast*')
   """
   mkdir filtered
   Rscript /usr/bin/filterFastqs.R --fastqsInDir . --fastqsOutDir ./filtered --isPaired $params.isPaired --trimLeft $params.trimLeft --trimLeftR $params.trimLeftR --truncLen $params.truncLen --truncLenR $params.truncLenR --maxLen $params.maxLen --platform $params.platform
@@ -50,7 +50,7 @@ process buildErrors {
   input:
   tuple val(genomeName), path(fastasfiltered)
   output:
-  tuple val(genomeName), path('err.rds'), path('filtered/*.fastq')
+  tuple val(genomeName), path('err.rds'), path('filtered/*.fast*')
   """
   Rscript /usr/bin/buildErrorsN.R --fastqsInDir . --errorsOutDir . --errorsFileNameSuffix err.rds --isPaired $params.isPaired --platform $params.platform --nValue $params.nValue
   mkdir filtered
