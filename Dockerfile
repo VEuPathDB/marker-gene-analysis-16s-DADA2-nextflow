@@ -1,6 +1,6 @@
 FROM golob/dada2:1.14.1.ub.1804
 
-MAINTAINER rdemko2332@gmail.com
+LABEL maintainer="rdemko2332@gmail.com"
 
 WORKDIR /usr/bin/
 
