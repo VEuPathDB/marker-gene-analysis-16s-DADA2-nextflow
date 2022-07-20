@@ -16,7 +16,7 @@ The output files from this tool will be formatted as (SRRID supplied in sraStudy
   
   * Run the script
     
-    `nextflow run VEuPathDB/ASVTableTask -with-trace -c  <config_file> -r main`
+    `nextflow run VEuPathDB/MarkerGeneAnalysis16sDADA2 -with-trace -c  <config_file> -r main`
 
 Running this locally can commonly result in an OOME. This results from the derepFastq function in buildErrorsN.R having n as too great a value.
 
