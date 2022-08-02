@@ -16,14 +16,14 @@ def fetchRunAccessions( tsv ) {
 }
 
 
-process prepSra {
-  label 'prep'
+process downloadFiles {
+  container ='staphb/sratoolkit:2.9.2'  
   input:
-  tuple val(sample), path(runAccession)
+  val id
   output:
-  tuple val(sample), path("${sample}**.fastq")
+  tuple val(id), path("${id}**.fastq")
   """
-  gzip -d --force *.fastq.gz
+  fasterq-dump --split-3 ${id}
   """
 }
 
@@ -114,5 +114,6 @@ process mergeAsvsAndAssignToOtus {
 
 workflow {
   accessions = fetchRunAccessions( params.studyIdFile )
-  channel.fromSRA( accessions, apiKey: params.apiKey, protocol: "http" ) | prepSra | filterFastqs | buildErrors | fastqToAsv | mergeAsvsAndAssignToOtus
+  ids = Channel.fromList(accessions)
+  downloadFiles(ids) | filterFastqs | buildErrors | fastqToAsv | mergeAsvsAndAssignToOtus
 }
