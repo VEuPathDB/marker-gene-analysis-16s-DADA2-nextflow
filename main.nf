@@ -18,10 +18,13 @@ def fetchRunAccessions( tsv ) {
 
 process downloadFiles {
   container ='staphb/sratoolkit:2.9.2'  
+
   input:
-  val id
+    val id
+
   output:
-  tuple val(id), path("${id}**.fastq")
+    tuple val(id), path("${id}**.fastq")
+
   """
   fasterq-dump --split-3 ${id}
   """
@@ -30,10 +33,10 @@ process downloadFiles {
 
 process filterFastqs {
   input:
-  tuple val(genomeName), path(fastqs)
+    tuple val(genomeName), path(fastqs)
 
   output:
-  tuple val(genomeName), path('filtered/*.fast*')
+    tuple val(genomeName), path('filtered/*.fast*')
 
   """
   mkdir filtered
@@ -53,10 +56,10 @@ process filterFastqs {
 
 process buildErrors {
   input:
-  tuple val(genomeName), path(fastasfiltered)
+    tuple val(genomeName), path(fastasfiltered)
 
   output:
-  tuple val(genomeName), path('err.rds'), path('filtered/*.fast*')
+    tuple val(genomeName), path('err.rds'), path('filtered/*.fast*')
 
   """
   Rscript /usr/bin/buildErrorsN.R \
@@ -74,10 +77,10 @@ process buildErrors {
 
 process fastqToAsv {
   input:
-  tuple val(genomeName), path('err.rds'), path(fastqsFiltered)
+    tuple val(genomeName), path('err.rds'), path(fastqsFiltered)
 
   output:
-  tuple val(genomeName), path('featureTable.rds')
+    tuple val(genomeName), path('featureTable.rds')
 
   """
   Rscript /usr/bin/fastqToAsv.R  \
@@ -95,12 +98,12 @@ process mergeAsvsAndAssignToOtus {
   publishDir params.outputDir, mode: 'copy'
 
   input:
-  tuple val(genomeName), path('featureTable.rds')
+    tuple val(genomeName), path('featureTable.rds')
 
   output:
-  path '*_output'
-  path '*_output.bootstraps'
-  path '*_output.full'
+    path '*_output'
+    path '*_output.bootstraps'
+    path '*_output.full'
 
   """
   Rscript /usr/bin/mergeAsvsAndAssignToOtus.R \
