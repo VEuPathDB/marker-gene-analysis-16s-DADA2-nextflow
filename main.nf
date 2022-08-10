@@ -17,7 +17,7 @@ def fetchRunAccessions( tsv ) {
 
 
 process downloadFiles {
-  container ='staphb/sratoolkit:2.9.2'  
+  container ='veupathdb/bowtiemapping'  
 
   input:
     val id
