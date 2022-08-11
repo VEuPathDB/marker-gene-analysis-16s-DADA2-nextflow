@@ -25,9 +25,10 @@ process downloadFiles {
   output:
     tuple val(id), path("${id}**.fastq")
 
-  """
-  fasterq-dump --split-3 ${id}
-  """
+  script:
+    """
+    fasterq-dump --split-3 ${id}
+    """
 }
 
 
@@ -38,19 +39,20 @@ process filterFastqs {
   output:
     tuple val(genomeName), path('filtered/*.fast*')
 
-  """
-  mkdir filtered
-  Rscript /usr/bin/filterFastqs.R \
-    --fastqsInDir . \
-    --fastqsOutDir ./filtered \
-    --isPaired $params.isPaired \
-    --trimLeft $params.trimLeft \
-    --trimLeftR $params.trimLeftR \
-    --truncLen $params.truncLen \
-    --truncLenR $params.truncLenR \
-    --maxLen $params.maxLen \
-    --platform $params.platform
-  """
+  script:
+    """
+    mkdir filtered
+    Rscript /usr/bin/filterFastqs.R \
+      --fastqsInDir . \
+      --fastqsOutDir ./filtered \
+      --isPaired $params.isPaired \
+      --trimLeft $params.trimLeft \
+      --trimLeftR $params.trimLeftR \
+      --truncLen $params.truncLen \
+      --truncLenR $params.truncLenR \
+      --maxLen $params.maxLen \
+      --platform $params.platform
+    """
 }
 
 
@@ -61,17 +63,18 @@ process buildErrors {
   output:
     tuple val(genomeName), path('err.rds'), path('filtered/*.fast*')
 
-  """
-  Rscript /usr/bin/buildErrorsN.R \
-    --fastqsInDir . \
-    --errorsOutDir . \
-    --errorsFileNameSuffix err.rds \
-    --isPaired $params.isPaired \
-    --platform $params.platform \
-    --nValue $params.nValue
-  mkdir filtered
-  mv *.fastq filtered/
-  """
+  script:
+    """
+    Rscript /usr/bin/buildErrorsN.R \
+      --fastqsInDir . \
+      --errorsOutDir . \
+      --errorsFileNameSuffix err.rds \
+      --isPaired $params.isPaired \
+      --platform $params.platform \
+      --nValue $params.nValue
+    mkdir filtered
+    mv *.fastq filtered/
+    """
 }
 
 
@@ -82,15 +85,16 @@ process fastqToAsv {
   output:
     tuple val(genomeName), path('featureTable.rds')
 
-  """
-  Rscript /usr/bin/fastqToAsv.R  \
-    --fastqsInDir .  \
-    --errorsRdsPath ./err.rds \
-    --outRdsPath ./featureTable.rds \
-    --isPaired $params.isPaired \
-    --platform $params.platform \
-    --mergeTechReps $params.mergeTechReps
-  """
+  script:
+    """
+    Rscript /usr/bin/fastqToAsv.R  \
+      --fastqsInDir .  \
+      --errorsRdsPath ./err.rds \
+      --outRdsPath ./featureTable.rds \
+      --isPaired $params.isPaired \
+      --platform $params.platform \
+      --mergeTechReps $params.mergeTechReps
+    """
 }
 
 
@@ -105,18 +109,23 @@ process mergeAsvsAndAssignToOtus {
     path '*_output.bootstraps'
     path '*_output.full'
 
-  """
-  Rscript /usr/bin/mergeAsvsAndAssignToOtus.R \
-    --asvRdsInDir . \
-    --assignTaxonomyRefPath $params.trainingSet \
-    --addSpeciesRefPath $params.speciesAssignment \
-    --outPath ./"$genomeName"_output
-  """
+  script:
+    """
+    Rscript /usr/bin/mergeAsvsAndAssignToOtus.R \
+      --asvRdsInDir . \
+      --assignTaxonomyRefPath $params.trainingSet \
+      --addSpeciesRefPath $params.speciesAssignment \
+      --outPath ./"$genomeName"_output
+    """
 }
 
 
 workflow {
   accessions = fetchRunAccessions( params.studyIdFile )
-  ids = Channel.fromList(accessions)
-  downloadFiles(ids) | filterFastqs | buildErrors | fastqToAsv | mergeAsvsAndAssignToOtus
+  ids = Channel.fromList( accessions )
+  downloadFiles( ids ) \
+    | filterFastqs \
+    | buildErrors \
+    | fastqToAsv \
+    | mergeAsvsAndAssignToOtus
 }
