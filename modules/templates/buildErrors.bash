@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
 Rscript /usr/bin/buildErrorsN.R \
   --fastqsInDir . \
   --errorsOutDir . \
