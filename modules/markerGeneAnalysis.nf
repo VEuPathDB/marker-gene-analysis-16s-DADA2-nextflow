@@ -71,6 +71,7 @@ process mergeAsvsAndAssignToOtus {
 workflow markerGeneAnalysis {
   take:
     accessions
+
   main:
     ids = Channel.fromList( accessions )
     downloadFiles( ids ) \
