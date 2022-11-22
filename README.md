@@ -1,5 +1,27 @@
 # Nextflow Conversion of ASVTableTask.pm
 
+***<p align=center>MarkerGeneAnalysis16sDADA2</p>***  
+```mermaid
+flowchart TD
+    p0((Channel.fromList))
+    p1[markerGeneAnalysis:downloadFiles]
+    p2[markerGeneAnalysis:filterFastqs]
+    p3[markerGeneAnalysis:buildErrors]
+    p4[markerGeneAnalysis:fastqToAsv]
+    p5[markerGeneAnalysis:mergeAsvsAndAssignToOtus]
+    p6(( ))
+    p7(( ))
+    p8(( ))
+    p0 -->|ids| p1
+    p1 --> p2
+    p2 --> p3
+    p3 --> p4
+    p4 --> p5
+    p5 --> p8
+    p5 --> p7
+    p5 --> p6
+```
+
 In order to run the script, you will need to supply to the nextflow.config file:
 1. An apikey to be used to collect the fastq files from NCBI
 2. The location of your training set file (a short example file has been supplied in /data)
