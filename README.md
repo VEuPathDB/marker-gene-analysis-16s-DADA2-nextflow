@@ -22,6 +22,25 @@ flowchart TD
     p5 --> p6
 ```
 
+Decription of nextflow configuration parameters:
+
+| param         | value type        | description  |
+| ------------- | ------------- | ------------ |
+| studyIdFile | path | Path to SRAID tsv file |
+| platform | string | Platform the sequencing was done on. Used in filterFastqs step. Ex: "illumina" |
+| isPaired | boolean | Is the data paired? |
+| trimLeft | int | Amount to trim from left. Used in filterFastqs step. |
+| trimLeftR | int | Amount to trim from reverse strand. Used in filterFastqs step. |
+| truncLen | int | Amount to truncate from forward strand. Used in filterFastqs step. |
+| truncLenR | int | Amount to truncate from reverse stand. Used in filterFastqs step. |
+| maxLen | int | Maximum length. Used in filterFastqs step. |
+| mergeTechReps | boolean | Would you like to merge TechReps in fastqToAsv step. |
+| trainingSet | path | Path to training set fasta. |
+| speciesAssignment | path | Path to species assignment fasta. |
+| outputDir | path | Path where you would like results to be stored |
+| nValue | scientific notation | Ex: 1e+02 Used in buildErrors Step. Setting value above 1e+02 can cause issues with memory |
+
+
 In order to run the script, you will need to supply to the nextflow.config file:
 1. An apikey to be used to collect the fastq files from NCBI
 2. The location of your training set file (a short example file has been supplied in /data)
