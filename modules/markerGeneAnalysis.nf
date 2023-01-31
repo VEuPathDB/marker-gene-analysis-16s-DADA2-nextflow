@@ -42,7 +42,7 @@ process buildErrors {
 
 process fastqToAsv {
   input:
-    tuple val(genomeName), path('err.rds'), path(fastqsFiltered)
+    tuple val(genomeName), path(errorFile), path(fastqsFiltered)
 
   output:
     tuple val(genomeName), path('featureTable.rds')
