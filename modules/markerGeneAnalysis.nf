@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 
 
 process downloadFiles {
-  container ='veupathdb/bowtiemapping'  
+  container ='veupathdb/bowtiemapping:v1.0.0'  
 
   input:
     val id
@@ -17,6 +17,8 @@ process downloadFiles {
 
 
 process filterFastqs {
+  container = 'veupathdb/markergeneanalysis16sdada2:v1.0.0'
+  
   input:
     tuple val(genomeName), path(fastqs)
 
@@ -29,6 +31,8 @@ process filterFastqs {
 
 
 process buildErrors {
+  container = 'veupathdb/markergeneanalysis16sdada2:v1.0.0'
+
   input:
     tuple val(genomeName), path(fastasfiltered)
 
@@ -41,6 +45,8 @@ process buildErrors {
 
 
 process fastqToAsv {
+  container = 'veupathdb/markergeneanalysis16sdada2:v1.0.0'
+
   input:
     tuple val(genomeName), path(errorFile), path(fastqsFiltered)
 
@@ -53,6 +59,8 @@ process fastqToAsv {
 
 
 process mergeAsvsAndAssignToOtus {
+  container = 'veupathdb/markergeneanalysis16sdada2:v1.0.0'
+
   publishDir params.outputDir, mode: 'copy'
 
   input:
