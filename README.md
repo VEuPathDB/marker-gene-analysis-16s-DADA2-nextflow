@@ -1,72 +1,48 @@
-# Nextflow Conversion of ASVTableTask.pm
+# MarkerGeneAnalysis16sDADA2
 
-***<p align=center>MarkerGeneAnalysis16sDADA2</p>***  
-```mermaid
-flowchart TD
-    p0((Channel.fromList))
-    p1[markerGeneAnalysis:downloadFiles]
-    p2[markerGeneAnalysis:filterFastqs]
-    p3[markerGeneAnalysis:buildErrors]
-    p4[markerGeneAnalysis:fastqToAsv]
-    p5[markerGeneAnalysis:mergeAsvsAndAssignToOtus]
-    p6(( ))
-    p7(( ))
-    p8(( ))
-    p0 -->|ids| p1
-    p1 --> p2
-    p2 --> p3
-    p3 --> p4
-    p4 --> p5
-    p5 --> p8
-    p5 --> p7
-    p5 --> p6
+A Nextflow pipeline that processes 16S marker gene sequencing runs into amplicon sequence variants (ASVs) and OTU-level taxonomic assignments using DADA2.
+
+## Overview
+
+This pipeline takes a list of SRA run accessions, downloads the corresponding read data, and runs them through the [DADA2](https://benjjneb.github.io/dada2/) workflow: quality filtering, error-model learning, denoising into amplicon sequence variants, and taxonomic assignment against a reference training set. It is used within VEuPathDB's microbiome/marker-gene data workflows to turn raw 16S sequencing runs into per-run ASV/OTU tables with taxonomic and species-level assignments. Each run accession is downloaded with `fasterq-dump`, quality-filtered, used to build a per-run error model, denoised into a feature table, and finally merged and classified against the supplied training and species-assignment reference FASTAs.
+
+## Requirements
+
+- [Nextflow](https://www.nextflow.io/) (DSL2)
+- Docker (enabled by default via `nextflow.config`)
+
+The pipeline runs on the `veupathdb/markergeneanalysis16sdada2` container image (which bundles R, DADA2, and the pipeline's R scripts), except for the download step, which uses `veupathdb/bowtiemapping` (providing the SRA toolkit's `fasterq-dump`).
+
+## Usage
+
+```
+nextflow run VEuPathDB/MarkerGeneAnalysis16sDADA2 \
+  -r main \
+  --studyIdFile /path/to/SRAIDS.tsv \
+  --trainingSet /path/to/trainingSet.fa \
+  --speciesAssignment /path/to/speciesAssignment.fa \
+  --outputDir /path/to/output \
+  -resume
 ```
 
-Decription of nextflow configuration parameters:
+The pipeline has a single named workflow entry point, `markerGeneAnalysis`, which is invoked automatically by the top-level `workflow` block in `main.nf`. For each run accession listed in `studyIdFile`, it downloads the reads, filters them, builds an error model, denoises reads into ASVs, and merges/assigns taxonomy.
 
-| param         | value type        | description  |
-| ------------- | ------------- | ------------ |
-| studyIdFile | path | Path to SRAID tsv file |
-| platform | string | Platform the sequencing was done on. Used in filterFastqs step. Ex: "illumina" |
-| isPaired | boolean | Is the data paired? |
-| trimLeft | int | Amount to trim from left. Used in filterFastqs step. |
-| trimLeftR | int | Amount to trim from reverse strand. Used in filterFastqs step. |
-| truncLen | int | Amount to truncate from forward strand. Used in filterFastqs step. |
-| truncLenR | int | Amount to truncate from reverse stand. Used in filterFastqs step. |
-| maxLen | int | Maximum length. Used in filterFastqs step. |
-| mergeTechReps | boolean | Would you like to merge TechReps in fastqToAsv step. |
-| trainingSet | path | Path to training set fasta. |
-| speciesAssignment | path | Path to species assignment fasta. |
-| outputDir | path | Path where you would like results to be stored |
-| nValue | scientific notation | Ex: 1e+02 Used in buildErrors Step. Setting value above 1e+02 can cause issues with memory |
+## Key Parameters
 
+| Parameter | Description |
+| --- | --- |
+| `params.studyIdFile` | Path to a TSV file with a `run_accession` column listing the SRA run accessions to process. |
+| `params.platform` | Sequencing platform (e.g. `illumina`); passed to the filtering and error-model steps. |
+| `params.isPaired` | Whether the reads are paired-end. |
+| `params.trimLeft` / `params.trimLeftR` | Bases to trim from the start of the forward/reverse reads during filtering. |
+| `params.truncLen` / `params.truncLenR` | Length to truncate the forward/reverse reads to during filtering. |
+| `params.maxLen` | Maximum read length allowed during filtering. |
+| `params.mergeTechReps` | Whether to merge technical replicates when building the ASV feature table. |
+| `params.nValue` | Number of reads dereplicated at a time when building the DADA2 error model (`derepFastq`); lowering this reduces memory usage on large runs. |
+| `params.trainingSet` | Path to the reference FASTA used for taxonomic assignment (`assignTaxonomy`). |
+| `params.speciesAssignment` | Path to the reference FASTA used for species-level assignment (`addSpecies`). |
+| `params.outputDir` | Directory where the final per-run output files are published. |
 
-In order to run the script, you will need to supply to the nextflow.config file:
-1. An apikey to be used to collect the fastq files from NCBI
-2. The location of your training set file (a short example file has been supplied in /data)
-3. The location of your species assignment file (a short example file has been supplied in /data)
+## Output
 
-*The parameter names for these have already been specified, you only need to enter them into the empty quotes.*
-
-The output files from this tool will be formatted as (SRRID supplied in sraStudyIDFile parameter)_(outputName parameter).(nothing, "bootstraps", or "full")
-
-### Get Started
-  * Install Nextflow
-    
-    `curl https://get.nextflow.io | bash`
-  
-  * Run the script
-    
-    `nextflow run VEuPathDB/MarkerGeneAnalysis16sDADA2 -with-trace -c  <config_file> -r main`
-
-Running this locally can commonly result in an OOME. This results from the derepFastq function in buildErrorsN.R having n as too great a value.
-
-`drpsF[[i]] <- derepFastq(inputFilesF[[i]], n = 1e+06, verbose = verbose)`
-
-The default n is 1 million reads. If an OOME occurs, a lower number can be entered. 
-
-Ex: `drpsF[[i]] <- derepFastq(inputFilesF[[i]],n = 1e+03, verbose = verbose)`
-
-This is specified in the nextflow.config file parameter "nValue". 
-
-Documentation for derepFastq and other dada2 functionality can be found [here](https://rdrr.io/github/benjjneb/dada2/man/derepFastq.html).
+For each run accession, three files named `<run_accession>_output`, `<run_accession>_output.bootstraps`, and `<run_accession>_output.full` are published to `params.outputDir`, containing the merged ASV/OTU table with taxonomic assignments, assignment bootstrap confidence values, and the full (unfiltered) assignment output, respectively.
