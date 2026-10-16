@@ -1,31 +1,12 @@
-import nextflow.splitter.CsvSplitter
-
 nextflow.enable.dsl=2
 
 
 def fetchRunAccessions( tsv ) {
-    def splitter = new CsvSplitter().options( header:true, sep:'\t' )
-    def reader = new BufferedReader( new FileReader( tsv ) )
-    splitter.parseHeader( reader )
-    List<String> run_accessions = []
-    Map<String,String> row
-    while( row = splitter.fetchRecord( reader ) ) {
-       run_accessions.add( row['run_accession'] )
-    }
-    return run_accessions
+    def splitter = new nextflow.splitter.CsvSplitter().options( header:true, sep:'\t' )
+    List<Map> rows = splitter.target( file( tsv ) ).list()
+    return rows.collect { row -> row['run_accession'] }
 }
 
-
-//--------------------------------------------------------------------------
-// Param Checking
-//--------------------------------------------------------------------------
-
-if(params.studyIdFile) {
-  accessions = fetchRunAccessions( params.studyIdFile )
-}
-else {
-  throw new Exception("Missing params.studyIdFile")
-}
 
 //--------------------------------------------------------------------------
 // Includes
@@ -40,6 +21,13 @@ include { markerGeneAnalysis } from './modules/markerGeneAnalysis.nf'
 
 workflow {
   
+  if(params.studyIdFile) {
+    accessions = fetchRunAccessions( params.studyIdFile )
+  }
+  else {
+    error "Missing params.studyIdFile"
+  }
+
   markerGeneAnalysis(accessions)
 
 }
